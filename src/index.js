@@ -22,7 +22,6 @@ app.get('/lessons', async (req, res) => {
     const { date, status, teacherIds, studentsCount, page = 1, lessonsPerPage = 5 } = req.query;
 
     // check data
-
     if (date !== undefined) {
         if (typeof date !== 'string')
             return res.status(400).json({ error: 'Invalid date format.' });
@@ -94,13 +93,11 @@ app.get('/lessons', async (req, res) => {
     }
 
     try {
-        // Use knex-paginate for pagination
         const lessons = await query.paginate({
             perPage: lessonsPerPage,
             currentPage: page
         });
 
-        // Format the output
         const formattedLessons = await Promise.all(lessons.data.map(async (lesson) => {
             const students = await db('lesson_students')
                 .join('students', 'lesson_students.student_id', 'students.id')
@@ -134,7 +131,6 @@ app.get('/lessons', async (req, res) => {
             };
         }));
 
-        // Send the response with pagination info
         res.json({
             currentPage: lessons.pagination.currentPage,
             totalCount: lessons.data.length,
