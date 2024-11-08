@@ -1,0 +1,12 @@
+services:
+  postgres:
+    restart: no # coz we don`t want to keep the container running after reboot and etc 
+    image: postgres
+    volumes:
+      - ./data/test.sql:/docker-entrypoint-initdb.d/dummy_dump.sql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - 5432:5432
