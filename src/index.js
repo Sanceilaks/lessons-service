@@ -98,27 +98,29 @@ app.get('/lessons', async (req, res) => {
             currentPage: page
         });
 
+        const allTeachers = await db('lesson_teachers')
+            .join('teachers', 'lesson_teachers.teacher_id', 'teachers.id');
+
+        const allStudents = await db('lesson_students')
+            .join('students', 'lesson_students.student_id', 'students.id');
+
         const formattedLessons = await Promise.all(lessons.data.map(async (lesson) => {
-            const students = await db('lesson_students')
-                .join('students', 'lesson_students.student_id', 'students.id')
-                .where('lesson_students.lesson_id', lesson.id)
-                .select('students.id', 'students.name', 'lesson_students.visit')
-                .then(students => students.map(student => ({
+            const students = allStudents
+                .filter(st => st.lesson_id === lesson.id)
+                .map(student => ({
                     id: student.id,
                     name: student.name,
                     visit: student.visit
-                })));
+                }));
 
-            const teachers = await db('lesson_teachers')
-                .join('teachers', 'lesson_teachers.teacher_id', 'teachers.id')
-                .where('lesson_teachers.lesson_id', lesson.id)
-                .select('teachers.id', 'teachers.name')
-                .then(teachers => teachers.map(teacher => ({
+            const teachers = allTeachers
+                .filter(te => te.lesson_id === lesson.id)
+                .map(teacher => ({
                     id: teacher.id,
                     name: teacher.name
-                })));
+                }));
 
-            const visitCount = students.length;
+            const visitCount = students.filter(student => student.visit).length;
 
             return {
                 id: lesson.id,
